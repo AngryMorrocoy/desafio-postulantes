@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field, fields, asdict
 import datetime
 from enum import Enum
-from typing import List
+from typing import List, Optional
 
 # Fields
 # number
@@ -20,16 +20,9 @@ class PayrollState(Enum):
 
 
 @dataclass
-class RegistrationData:
+class TaxData:
     dr: str = field()
-    res_number: int = field()
-    date: datetime.date = field()
-
-
-@dataclass
-class LastUpdateData:
-    dr: str = field()
-    res_number: int = field()
+    res_number: str = field()
     date: datetime.date = field()
 
 
@@ -38,10 +31,10 @@ class VoluntaryRegistrationPayroll:
     number: int = field()
     social_reason: str = field()
     country: str = field()
-    registration_data: RegistrationData = field()
     expires_at: datetime.date = field()
-    last_update_data: LastUpdateData = field()
     state: PayrollState = field()
+    registration_data: Optional[TaxData] = field(default=None)
+    last_update_data: Optional[TaxData] = field(default=None)
 
     def as_dict(self):
         def dict_factory(kv_tuple: List[tuple]):
@@ -50,7 +43,7 @@ class VoluntaryRegistrationPayroll:
                 if isinstance(value, datetime.date):
                     value = value.isoformat()
                 elif isinstance(value, PayrollState):
-                    value = value.name
+                    value = value.value
                 resulting_dict[key] = value
 
             return resulting_dict
