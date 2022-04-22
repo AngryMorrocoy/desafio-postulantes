@@ -1,4 +1,4 @@
-from requests_html import HTMLSession, HTML, Element
+from requests_html import AsyncHTMLSession, HTML, Element
 from typing import List, Optional
 from requests import Response
 from .types import VoluntaryRegistrationPayroll, TaxData
@@ -10,7 +10,7 @@ PAYROLL_URL = (
 )
 
 
-def parse_tax_data_from_str(data: str) -> Optional(TaxData):
+def parse_tax_data_from_str(data: str) -> Optional[TaxData]:
     dr, res_number, date = re.split("\s?[/]\s?", data)
     if not all([dr, res_number, date]):
         return None
@@ -25,7 +25,7 @@ def parse_expire_date_from_str(date_string: str) -> datetime.date:
     # Here I decided to map to short month names in spanish
     # since the page is in spanish and couldn't found other months
     # than june :c
-    months = {
+    MONTHS = {
         "ene": 1,
         "feb": 2,
         "mar": 3,
@@ -41,10 +41,10 @@ def parse_expire_date_from_str(date_string: str) -> datetime.date:
     }
 
     # Since the date is in the format "month-XX"
-    # I'll assume the XX digits represent the year, since it's always less
+    # I'll assume the XX digits represent the year (20XX), since it's always less
     # than the year of last update, unless it's excluded or pendant.
-    month, year = map(int, date_string.split("-"))
-    return datetime.date(year, month, 1)
+    month, year = date_string.split("-")
+    return datetime.date(int(year) + 2000, MONTHS[month], 1)
 
 
 def parse_row_text_into_voluntary_registration_payroll(
@@ -62,10 +62,10 @@ def parse_row_text_into_voluntary_registration_payroll(
 
     registration_data = parse_tax_data_from_str(REGISTRATION_DATA_COLUMN)
     last_update_data = parse_tax_data_from_str(LAST_UPDATE_DATA_COLUMN)
-    expires_at = parse_expire_date_from_str(LAST_UPDATE_DATA_COLUMN)
+    expires_at = parse_expire_date_from_str(EXPIRES_AT_COLUMN)
 
     return VoluntaryRegistrationPayroll(
-        columns[0],  # The column of register
+        int(columns[0]),  # The column of register
         columns[1],  # The column of social reason
         columns[2],  # The column of the country
         expires_at,
@@ -75,17 +75,17 @@ def parse_row_text_into_voluntary_registration_payroll(
     )
 
 
-def get_voluntary_registration_payroll() -> List[VoluntaryRegistrationPayroll]:
-    html_session = HTMLSession()
+async def get_voluntary_registration_payroll() -> List[VoluntaryRegistrationPayroll]:
+    html_session = AsyncHTMLSession()
 
-    request: Response = html_session.get(PAYROLL_URL, timeout=15_000)
+    request = await html_session.get(PAYROLL_URL, timeout=20_000)
+
     if request.status_code != 200:
         raise ValueError("?")
 
     # Runs the javascript so the target table gets rendered
-    request.html.render()
-
     html_data: HTML = request.html
+    await html_data.arender(timeout=20)
 
     data_table: Element = html_data.find("#tabledatasii", first=True)
     table_rows: List[Element] = data_table.find("tbody > tr")
@@ -93,6 +93,7 @@ def get_voluntary_registration_payroll() -> List[VoluntaryRegistrationPayroll]:
     return [
         parse_row_text_into_voluntary_registration_payroll(row.text)
         for row in table_rows
+        if row.text
     ]
 
 

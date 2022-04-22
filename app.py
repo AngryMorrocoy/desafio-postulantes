@@ -1,12 +1,14 @@
-from flask import Flask
-from flask_restful import Api
+from quart import Quart
+import datetime
+from utils.payroll_scrapper import get_voluntary_registration_payroll
 
-from resources.payroll import PayrollResource
+app = Quart(__name__)
 
-app = Flask(__name__)
-api = Api(app)
 
-api.add_resource(PayrollResource, "/api/payroll")
+@app.route("/api/payroll/", methods=["GET"])
+async def get_payroll():
+    registration_payroll = await get_voluntary_registration_payroll()
+    return {"results": [row.as_dict() for row in registration_payroll]}
 
 
 def main():

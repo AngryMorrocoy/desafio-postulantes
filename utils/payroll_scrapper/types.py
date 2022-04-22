@@ -40,9 +40,7 @@ class VoluntaryRegistrationPayroll:
         def dict_factory(kv_tuple: List[tuple]):
             resulting_dict = {}
             for key, value in kv_tuple:
-                if isinstance(value, datetime.date):
-                    value = value.isoformat()
-                elif isinstance(value, PayrollState):
+                if isinstance(value, PayrollState):
                     value = value.value
                 resulting_dict[key] = value
 
