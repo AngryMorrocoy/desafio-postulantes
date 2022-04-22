@@ -87,3 +87,8 @@ con "*debug=True*". Si ejecutarlo en "*modo produccion*"
 ```bash
 > hypercorn app:app
 ```
+
+Es importante tener en cuenta que a la primera petición que se haga a la ruta
+/api/payroll se comenzará a descargar chromium en su sistema, esto se debe a que
+por debajo de la mesa requests-HTML usa pyppeteer y chromium (chrome) es una
+dependencia de este
