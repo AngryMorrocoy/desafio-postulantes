@@ -1,14 +1,12 @@
-from requests_html import AsyncHTMLSession, HTML, Element
+from pyppeteer.element_handle import ElementHandle
+from pyppeteer.page import Page
+from pyppeteer import launch
 from typing import List, Optional
-from requests import Response
 from .types import VoluntaryRegistrationPayroll, TaxData
 import datetime
 import re
-
-from pyppeteer import launch
-from pyppeteer.element_handle import ElementHandle
-from pyppeteer.page import Page
 import asyncio
+from config import CHROMIUM_BINARY_PATH
 
 PAYROLL_URL = (
     "https://www.sii.cl/servicios_online/1047-nomina_inst_financieras-1714.html"
@@ -93,7 +91,7 @@ async def separate_columns_text_with_newline(page: Page, row: ElementHandle) -> 
 
 async def get_voluntary_registration_payroll() -> List[VoluntaryRegistrationPayroll]:
 
-    browser = await launch(args=["--no-sandbox"])
+    browser = await launch(executablePath=CHROMIUM_BINARY_PATH, args=["--no-sandbox"])
     page = await browser.newPage()
 
     await page.goto(PAYROLL_URL)
@@ -104,7 +102,6 @@ async def get_voluntary_registration_payroll() -> List[VoluntaryRegistrationPayr
     rows_as_text = await asyncio.gather(
         *[separate_columns_text_with_newline(page, row) for row in table_rows]
     )
-
 
     await browser.close()
 
