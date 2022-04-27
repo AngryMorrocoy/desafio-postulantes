@@ -92,3 +92,29 @@ Es importante tener en cuenta que a la primera petición que se haga a la ruta
 /api/payroll se comenzará a descargar chromium en su sistema, esto se debe a que
 por debajo de la mesa requests-HTML usa pyppeteer y chromium (chrome) es una
 dependencia de este
+
+---
+
+### Docker
+
+Para ejecutar la aplicación usando docker ejecute el siguiente comando
+(reemplazando ${image-name} con el nombre que usará para construir la imagen).
+
+```bash
+> docker build -t ${image-name} .
+```
+
+Y para correr la imagen necesita pasar un libre como variable de entorno al
+contenedor (en el ejemplo es ${my-docker-port}) y mapear dicho puerto en su máquina (en
+el ejemplo es ${my-local-port}).
+
+```bash
+> docker run \
+    -e PORT=${my-docker-port}
+    -p ${my-local-port}:${my-port}
+    ${image-name}
+```
+
+De esta forma será capaz de ver la única ruta de la aplicación entrando a su
+navegador o mediante otra herramienta haciendo una petición GET a
+"localhost:${my-local-port}/api/payroll".
