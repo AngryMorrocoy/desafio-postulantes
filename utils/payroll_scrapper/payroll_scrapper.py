@@ -90,6 +90,8 @@ async def get_voluntary_registration_payroll() -> List[VoluntaryRegistrationPayr
     data_table: Element = html_data.find("#tabledatasii", first=True)
     table_rows: List[Element] = data_table.find("tbody > tr")
 
+    html_session.close()
+
     return [
         parse_row_text_into_voluntary_registration_payroll(row.text)
         for row in table_rows
