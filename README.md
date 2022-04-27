@@ -82,7 +82,7 @@ que se escriben a continuación se ejecutan dentro de la raíz del proyecto.
 ```
 
 De la forma en que se ejecuta arriba, el proyecto inica en modo de desarrollo
-con "*debug=True*". Si ejecutarlo en "*modo produccion*"
+con "*debug=True*". Si desea ejecutarlo en "*modo produccion*".
 
 ```bash
 > hypercorn app:app
