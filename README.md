@@ -29,9 +29,10 @@ El JSON de respuesta puede venir en el formato que estimes conveniente.
 
 Acá presento una api escrita en [Quart](), en un principio quería escribir la
 api en flask, pero dado que decidí usar
-[Requests-HTML](https://github.com/psf/requests-html) y el uso de async/await no
+[~~Requests-HTML~~](https://github.com/psf/requests-html)
+([pyppeteer](https://github.com/pyppeteer/pyppeteer)) y el uso de async/await no
 va muy de la mano con flask (o no de manera sencilla), opté por mover la
-aplicación a quart que es *flask con async/await* mover el proyecto de flask a
+aplicación a quart que es *flask con async/await*. Mover el proyecto de flask a
 Quart no fue más que cambiar unas líneas, ya que en esencia el código es el
 mismo.
 
@@ -89,9 +90,14 @@ con "*debug=True*". Si desea ejecutarlo en "*modo produccion*".
 ```
 
 Es importante tener en cuenta que a la primera petición que se haga a la ruta
-/api/payroll se comenzará a descargar chromium en su sistema, esto se debe a que
-por debajo de la mesa requests-HTML usa pyppeteer y chromium (chrome) es una
-dependencia de este
+/api/payroll se comenzará a descargar chromium en su sistema ya que éste es una
+dependencia de pyppeteer. En caso de ya tener chromium en su sistema y no
+quiera descargarlo de nuevo, puede asignar a la variable de entorno
+*PYPPETEER_EXECUTABLE_PATH* el binario de chromium que tenga en su sistema. Por ejemplo:
+
+```bash
+> PYPPETEER_EXECUTABLE_PATH=/usr/bin/chromium hypercorn app:app
+```
 
 ---
 
