@@ -1,9 +1,12 @@
-from requests_html import AsyncHTMLSession, HTML, Element
+from pyppeteer.element_handle import ElementHandle
+from pyppeteer.page import Page
+from pyppeteer import launch
 from typing import List, Optional
-from requests import Response
 from .types import VoluntaryRegistrationPayroll, TaxData
 import datetime
 import re
+import asyncio
+from config import CHROMIUM_BINARY_PATH
 
 PAYROLL_URL = (
     "https://www.sii.cl/servicios_online/1047-nomina_inst_financieras-1714.html"
@@ -75,27 +78,37 @@ def parse_row_text_into_voluntary_registration_payroll(
     )
 
 
+async def separate_columns_text_with_newline(page: Page, row: ElementHandle) -> str:
+    row_columns = await row.querySelectorAll("td")
+    columns_text = await asyncio.gather(
+        *[
+            page.evaluate("(element) => element.textContent", column)
+            for column in row_columns
+        ]
+    )
+    return "\n".join(columns_text)
+
+
 async def get_voluntary_registration_payroll() -> List[VoluntaryRegistrationPayroll]:
-    html_session = AsyncHTMLSession()
 
-    request = await html_session.get(PAYROLL_URL, timeout=20_000)
+    browser = await launch(executablePath=CHROMIUM_BINARY_PATH, args=["--no-sandbox"])
+    page = await browser.newPage()
 
-    if request.status_code != 200:
-        raise ValueError("?")
+    await page.goto(PAYROLL_URL)
 
-    # Runs the javascript so the target table gets rendered
-    html_data: HTML = request.html
-    await html_data.arender(timeout=20)
+    data_table = await page.querySelector("#tabledatasii")
+    table_rows = await data_table.querySelectorAll("tbody > tr")
 
-    data_table: Element = html_data.find("#tabledatasii", first=True)
-    table_rows: List[Element] = data_table.find("tbody > tr")
+    rows_as_text = await asyncio.gather(
+        *[separate_columns_text_with_newline(page, row) for row in table_rows]
+    )
 
-    await html_session.close()
+    await browser.close()
 
     return [
-        parse_row_text_into_voluntary_registration_payroll(row.text)
-        for row in table_rows
-        if row.text
+        parse_row_text_into_voluntary_registration_payroll(row_text)
+        for row_text in rows_as_text
+        if row_text
     ]
 
 
