@@ -26,7 +26,7 @@ def parse_tax_data_from_str(data: str) -> Optional[TaxData]:
 
 def parse_expire_date_from_str(date_string: str) -> datetime.date:
     # Here I decided to map to short month names in spanish
-    # since the page is in spanish and couldn't found other months
+    # since the page is in spanish and couldn't find other months
     # than june :c
     MONTHS = {
         "ene": 1,
