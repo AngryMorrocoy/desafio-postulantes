@@ -110,7 +110,3 @@ async def get_voluntary_registration_payroll() -> List[VoluntaryRegistrationPayr
         for row_text in rows_as_text
         if row_text
     ]
-
-
-if __name__ == "__main__":
-    get_voluntary_registration_payroll()
